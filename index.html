@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ray Personal Dashboard</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-dark: #111827; --bg-med: #1f2937; --bg-light: #374151;
+            --text-light: #f3f4f6; --text-med: #9ca3af;
+            --primary: #4f46e5; --primary-light: #6366f1; --secondary: #a855f7;
+            --accent-green: #22c55e; --accent-yellow: #f59e0b; --accent-red: #ef4444; --accent-blue: #3b82f6;
+            --shadow-color-primary: rgba(79, 70, 229, 0.3); --border-color: rgba(255, 255, 255, 0.1);
+            --font-family: 'Poppins', sans-serif; --border-radius-lg: 1rem; --border-radius-md: 0.5rem;
+            --transition-speed: 0.3s;
+        }
+        body { font-family: var(--font-family); background-color: var(--bg-dark); color: var(--text-light); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg-med); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; border: 2px solid var(--bg-med); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary-light); }
+        .page { animation: page-fade-in 0.6s ease-in-out; }
+        @keyframes page-fade-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .btn { position: relative; overflow: hidden; font-weight: 600; border-radius: var(--border-radius-md); padding: 0.75rem 1.5rem; border: none; cursor: pointer; transition: all var(--transition-speed) ease; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .btn:active { transform: translateY(-1px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+        .btn-primary { background: linear-gradient(45deg, var(--primary), var(--primary-light)); color: white; }
+        .btn-secondary { background: linear-gradient(45deg, var(--secondary), #d946ef); color: white; }
+        .btn-success { background-color: var(--accent-green); color: white; }
+        .btn-danger { background-color: var(--accent-red); color: white; }
+        .btn-warning { background-color: var(--accent-yellow); color: white; }
+        .btn-info { background-color: var(--accent-blue); color: white; }
+        .btn-neutral { background-color: var(--bg-light); color: var(--text-light); }
+        .glass-effect { background: rgba(31, 41, 55, 0.5); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border-color); transition: all var(--transition-speed) ease; }
+        .student-card, .exercise-card, .dashboard-card { border-radius: var(--border-radius-lg); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2); }
+        .student-card:hover, .exercise-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 0 25px var(--shadow-color-primary); border-color: var(--primary); }
+        .form-input { width: 100%; background-color: var(--bg-med); border: 1px solid var(--border-color); color: var(--text-light); border-radius: var(--border-radius-md); padding: 0.75rem 1rem; transition: all var(--transition-speed) ease; }
+        .form-input::placeholder { color: var(--text-med); }
+        .form-input:focus { outline: none; background-color: var(--bg-dark); border-color: var(--primary-light); box-shadow: 0 0 15px var(--shadow-color-primary); }
+        .modal-backdrop { transition: opacity 0.3s ease; }
+        .modal-content { transition: transform 0.3s ease, opacity 0.3s ease; transform: scale(0.95); opacity: 0; }
+        .modal-open .modal-content { transform: scale(1); opacity: 1; }
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { padding: 1rem 1.5rem; border-radius: var(--border-radius-md); color: white; font-weight: 500; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); opacity: 0; transform: translateX(100%); animation: slideIn var(--transition-speed) forwards, slideOut var(--transition-speed) 3.5s forwards; display: flex; align-items: center; gap: 0.75rem; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
+        .exercise-card.dragging { opacity: 0.4; border: 2px dashed var(--primary-light); background: rgba(79, 70, 229, 0.1); }
+        @media print {
+            body { background-color: #fff; color: #000; font-family: var(--font-family); }
+            #app, #toast-container, #modals-container { display: none !important; }
+            #print-area { display: block !important; }
+            .printable-workout-card { page-break-after: always; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 1rem; border-radius: 12px; }
+            .printable-workout-card:last-child { page-break-after: avoid; }
+            .print-header { padding: 1.5rem; text-align: center; border-radius: 12px 12px 0 0; background: linear-gradient(to right, #4f46e5, #7c3aed) !important; color: #fff !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
+            .print-student-name { font-size: 2rem; font-weight: 700; }
+            .print-workout-name { font-size: 1.5rem; margin-top: 0.5rem; opacity: 0.9; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; font-size: 14px; }
+            .print-table th, .print-table td { border: 1px solid #e5e7eb; padding: 0.75rem 1rem; text-align: left; vertical-align: middle; }
+            .print-table th { background-color: #f3f4f6 !important; font-weight: 600; -webkit-print-color-adjust: exact; }
+            .print-table tr:nth-child(even) { background-color: #fafafa !important; -webkit-print-color-adjust: exact; }
+            .fas { font-family: "Font Awesome 6 Free", "FontAwesome" !important; font-weight: 900; -webkit-font-smoothing: antialiased; }
+        }
+        @page { size: A4; margin: 15mm; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="app" class="min-h-screen p-4 sm:p-6 lg:p-8">
+        
+        <header class="text-center mb-12">
+            <h1 class="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
+                <i class="fas fa-dumbbell mr-2"></i> Ray Personal
+            </h1>
+            <p class="text-gray-400 mt-2">Olá Ray, aqui você pode gerenciar, organizar e imprimir a ficha dos seus alunos.</p>
+        </header>
+
+        <main id="main-content"></main>
+        <div id="modals-container"></div>
+    </div>
+    
+    <div id="toast-container"></div>
+    <div id="print-area" class="hidden"></div>
+    <input type="file" id="file-importer" class="hidden" accept=".json">
+
+    <script>
+    const mainContent = document.getElementById('main-content');
+    const modalsContainer = document.getElementById('modals-container');
+    const printArea = document.getElementById('print-area');
+    const toastContainer = document.getElementById('toast-container');
+    const fileImporter = document.getElementById('file-importer');
+    let appData = { students: [] };
+    let draggedElement = null;
+
+    // --- GERENCIAMENTO DE DADOS (localStorage) ---
+    const saveData = () => localStorage.setItem('personalTrainerData', JSON.stringify(appData));
+    const loadData = () => {
+        const data = localStorage.getItem('personalTrainerData');
+        if (data) {
+            try { appData = JSON.parse(data); if (!appData.students) appData.students = []; }
+            catch(e) { console.error("Erro ao carregar dados:", e); appData = { students: [] }; }
+        }
+    };
+    const generateId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
+
+    // --- INTERFACE (UI) ---
+    function showToast(message, type = 'success') {
+        const icons = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
+        const toast = document.createElement('div');
+        toast.className = `toast bg-${type === 'success' ? 'green' : type === 'error' ? 'red' : 'blue'}-500`;
+        toast.innerHTML = `<i class="fas ${icons[type]}"></i> ${message}`;
+        toastContainer.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    }
+    
+    function openModal(title, content, footer) {
+        const modalId = generateId('modal');
+        modalsContainer.innerHTML = `<div id="${modalId}" class="modal-backdrop fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50"><div class="modal-content glass-effect rounded-2xl shadow-2xl w-full max-w-lg mx-auto overflow-hidden"><div class="p-6"><div class="flex justify-between items-center mb-6"><h3 class="text-2xl font-bold text-white">${title}</h3><button onclick="closeModal('${modalId}')" class="text-gray-400 hover:text-white transition-colors text-2xl">×</button></div><div>${content}</div><div class="mt-8 flex justify-end gap-4">${footer}</div></div></div></div>`;
+        setTimeout(() => document.getElementById(modalId)?.classList.add('modal-open'), 10);
+        return modalId;
+    }
+
+    const closeModal = (modalId) => {
+        const modal = document.getElementById(modalId);
+        if (modal) { modal.classList.remove('modal-open'); setTimeout(() => modal.remove(), 300); }
+    };
+    
+    function showConfirmationModal(title, message, onConfirm) {
+        const content = `<p class="text-gray-300">${message}</p>`;
+        const footer = `<button id="cancel-btn" class="btn btn-neutral">Cancelar</button><button id="confirm-btn" class="btn btn-danger">Confirmar</button>`;
+        const modalId = openModal(title, content, footer);
+        document.getElementById('confirm-btn').onclick = () => { onConfirm(); closeModal(modalId); };
+        document.getElementById('cancel-btn').onclick = () => closeModal(modalId);
+    }
+
+    // --- BACKUP (IMPORTAR/EXPORTAR) ---
+    function exportData() {
+        if(appData.students.length === 0) return showToast("Nada para exportar.", "info");
+        const dataStr = JSON.stringify(appData, null, 2);
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([dataStr], { type: 'application/json' }));
+        link.download = `raypersonal_backup_${new Date().toISOString().slice(0, 10)}.json`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+        showToast("Backup exportado com sucesso!");
+    }
+    const importData = () => fileImporter.click();
+    fileImporter.onchange = e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = event => {
+            try {
+                const importedData = JSON.parse(event.target.result);
+                if (importedData && Array.isArray(importedData.students)) {
+                    showConfirmationModal( 'Confirmar Importação', 'Isso substituirá TODOS os dados atuais. Deseja continuar?', () => {
+                        appData = importedData;
+                        saveData();
+                        renderHomeView();
+                        showToast("Dados importados com sucesso!");
+                    });
+                } else showToast("Arquivo de backup inválido.", "error");
+            } catch(error) { showToast("Erro ao ler o arquivo.", "error"); }
+            fileImporter.value = "";
+        };
+        reader.readAsText(file);
+    };
+
+    // --- FUNÇÕES CRUD (Create, Read, Update, Delete) ---
+    const getStudent = id => appData.students.find(s => s.id === id);
+    const getWorkout = (sId, wId) => getStudent(sId)?.workouts.find(w => w.id === wId);
+    const getExercise = (sId, wId, eId) => getWorkout(sId, wId)?.exercises.find(e => e.id === eId);
+
+    const addStudent = name => { appData.students.unshift({ id: generateId('s'), name, workouts: [] }); saveData(); showToast("Aluno adicionado!"); renderStudentsListView(); };
+    const updateStudent = (id, name) => { const s = getStudent(id); s.name = name; saveData(); showToast("Aluno atualizado!"); renderStudentsListView(document.getElementById('search-student')?.value); };
+    const deleteStudent = id => showConfirmationModal("Excluir Aluno?", "Esta ação não pode ser desfeita.", () => { appData.students = appData.students.filter(s => s.id !== id); saveData(); showToast("Aluno excluído!"); renderStudentsListView(); });
+    
+    const addWorkout = (sId, name) => { getStudent(sId).workouts.unshift({ id: generateId('w'), name, exercises: [] }); saveData(); showToast("Treino adicionado!"); renderStudentDetailView(sId); };
+    const updateWorkout = (sId, wId, name) => { getWorkout(sId, wId).name = name; saveData(); showToast("Treino atualizado!"); renderStudentDetailView(sId); };
+    const deleteWorkout = (sId, wId) => showConfirmationModal("Excluir Treino?", "", () => { const s = getStudent(sId); s.workouts = s.workouts.filter(w => w.id !== wId); saveData(); showToast("Treino excluído!"); renderStudentDetailView(sId); });
+    const cloneWorkout = (sId, wId) => { const w = getWorkout(sId, wId); const clone = deepClone(w); clone.id = generateId('w'); clone.name = `${w.name} (Cópia)`; getStudent(sId).workouts.push(clone); saveData(); showToast("Treino clonado!"); renderStudentDetailView(sId); };
+    
+    const addExercise = (sId, wId, data) => { getWorkout(sId, wId).exercises.push({ id: generateId('e'), ...data }); saveData(); showToast("Exercício adicionado!"); renderStudentDetailView(sId); };
+    const updateExercise = (sId, wId, eId, data) => { Object.assign(getExercise(sId, wId, eId), data); saveData(); showToast("Exercício atualizado!"); renderStudentDetailView(sId); };
+    const deleteExercise = (sId, wId, eId) => { const w = getWorkout(sId, wId); w.exercises = w.exercises.filter(e => e.id !== eId); saveData(); showToast("Exercício removido!", "info"); renderStudentDetailView(sId); };
+
+    // --- FUNÇÕES DE ABRIR MODAIS (Clean and Corrected) ---
+    const getStudentFields = (name = '') => `<div class="mb-4"><label for="name" class="block text-sm font-medium text-gray-300 mb-2">Nome do Aluno</label><input type="text" id="name" class="form-input" value="${name}" placeholder="Ex: João da Silva"></div>`;
+    const openAddStudentModal = () => {
+        const title = '<i class="fas fa-user-plus mr-3"></i> Adicionar Novo Aluno';
+        const footer = '<button id="cancel-btn" class="btn btn-neutral">Cancelar</button><button id="save-btn" class="btn btn-primary">Salvar</button>';
+        const modalId = openModal(title, getStudentFields(), footer);
+        document.getElementById('save-btn').onclick = () => { const name = document.getElementById('name').value.trim(); if(name){ addStudent(name); closeModal(modalId); } else { showToast('O nome não pode estar vazio.', 'error'); }};
+        document.getElementById('cancel-btn').onclick = () => closeModal(modalId);
+    };
+    const openEditStudentModal = (sId) => {
+        const s = getStudent(sId);
+        const title = '<i class="fas fa-pencil-alt mr-3"></i> Editar Aluno';
+        const footer = '<button id="cancel-btn" class="btn btn-neutral">Cancelar</button><button id="save-btn" class="btn btn-primary">Atualizar</button>';
+        const modalId = openModal(title, getStudentFields(s.name), footer);
+        document.getElementById('save-btn').onclick = () => { const name = document.getElementById('name').value.trim(); if(name){ updateStudent(sId, name); closeModal(modalId); } else { showToast('O nome não pode estar vazio.', 'error'); }};
+        document.getElementById('cancel-btn').onclick = () => closeModal(modalId);
+    };
+    
+    const getWorkoutFields = (name = '') => `<div class="mb-4"><label for="name" class="block text-sm font-medium text-gray-300 mb-2">Nome do Treino</label><input type="text" id="name" class="form-input" value="${name}" placeholder="Ex: Treino A - Peito/Tríceps"></div>`;
+    const openAddWorkoutModal = sId => { const title='<i class="fas fa-file-medical mr-3"></i> Nova Ficha'; const ftr='<button id="cancel-btn" class="btn btn-neutral">Cancelar</button><button id="save-btn" class="btn btn-primary">Salvar</button>'; const mId=openModal(title, getWorkoutFields(), ftr); document.getElementById('save-btn').onclick=()=>{const n=document.getElementById('name').value.trim();if(n){addWorkout(sId, n);closeModal(mId);}};document.getElementById('cancel-btn').onclick=()=>closeModal(mId); };
+    const openEditWorkoutModal = (sId, wId) => { const w=getWorkout(sId, wId); const title='<i class="fas fa-pencil-alt mr-3"></i> Editar Ficha'; const ftr='<button id="cancel-btn" class="btn btn-neutral">Cancelar</button><button id="save-btn" class="btn btn-primary">Atualizar</button>'; const mId=openModal(title, getWorkoutFields(w.name), ftr); document.getElementById('save-btn').onclick=()=>{const n=document.getElementById('name').value.trim();if(n){updateWorkout(sId, wId, n);closeModal(mId);}};document.getElementById('cancel-btn').onclick=()=>closeModal(mId); };
+
+    const getExerciseFieldsFormatted = (e={}) => `<div class="space-y-4"><div><label for="name" class="block text-sm font-medium text-gray-300 mb-2">Nome</label><input type="text" id="name" class="form-input" value="${e.name || ''}" placeholder="Supino Reto"></div><div class="grid grid-cols-3 gap-4"><div><label for="sets" class="block text-sm font-medium text-gray-300 mb-2">Séries</label><input type="number" id="sets" class="form-input" value="${e.sets || ''}" placeholder="4"></div><div><label for="reps" class="block text-sm font-medium text-gray-300 mb-2">Reps</label><input type="text" id="reps" class="form-input" value="${e.reps || ''}" placeholder="8-12"></div><div><label for="rest" class="block text-sm font-medium text-gray-300 mb-2">Desc.(s)</label><input type="number" id="rest" class="form-input" value="${e.rest || ''}" placeholder="60"></div></div><div><label for="notes" class="block text-sm font-medium text-gray-300 mb-2">Notas</label><textarea id="notes" class="form-input" rows="3" placeholder="Cadência controlada">${e.notes || ''}</textarea></div></div>`;
+    function openAddOrEditExercise(isEdit, sId, wId, eId=null) {
+        const currentEx = isEdit ? getExercise(sId, wId, eId) : {};
+        const title = isEdit ? `<i class="fas fa-pencil-alt mr-3"></i> Editar Exercício` : `<i class="fas fa-plus mr-3"></i> Adicionar Exercício`;
+        const footer = `<button id="cancel-btn" class="btn btn-neutral">Cancelar</button><button id="save-btn" class="btn btn-primary">${isEdit ? 'Atualizar' : 'Salvar'}</button>`;
+        const modalId = openModal(title, getExerciseFieldsFormatted(currentEx), footer);
+        
+        document.getElementById('save-btn').onclick = () => {
+            const data = {
+                name: document.getElementById('name').value.trim(),
+                sets: document.getElementById('sets').value,
+                reps: document.getElementById('reps').value,
+                rest: document.getElementById('rest').value,
+                notes: document.getElementById('notes').value.trim()
+            };
+            if (!data.name || !data.sets || !data.reps || !data.rest) return showToast("Preencha os campos obrigatórios.", 'error');
+            if (isEdit) updateExercise(sId, wId, eId, data); else addExercise(sId, wId, data);
+            closeModal(modalId);
+        };
+        document.getElementById('cancel-btn').onclick = () => closeModal(modalId);
+    }
+    const openAddExerciseModal = (sId, wId) => openAddOrEditExercise(false, sId, wId);
+    const openEditExerciseModal = (sId, wId, eId) => openAddOrEditExercise(true, sId, wId, eId);
+    
+    // --- DRAG & DROP ---
+    function handleDragStart(e, studentId) { draggedElement = e.target; e.target.classList.add('dragging'); e.dataTransfer.setData('studentId', studentId); }
+    function handleDragEnd(e) { e.target.classList.remove('dragging'); }
+    function handleDragOver(e) { e.preventDefault(); }
+    function handleDrop(e) {
+        e.preventDefault();
+        const studentId = e.dataTransfer.getData('studentId');
+        const s = getStudent(studentId);
+        if (!draggedElement || !s) return;
+        
+        const targetContainer = e.target.closest('[data-workout-id]');
+        if (!targetContainer) return;
+
+        const targetWorkoutId = targetContainer.dataset.workoutId;
+        const targetWorkout = getWorkout(studentId, targetWorkoutId);
+        
+        let originalWorkout;
+        s.workouts.forEach(w => { if(w.exercises.some(ex => ex.id === draggedElement.id)) { originalWorkout = w; } });
+
+        const draggedExerciseIndex = originalWorkout.exercises.findIndex(ex => ex.id === draggedElement.id);
+        const [draggedExerciseObj] = originalWorkout.exercises.splice(draggedExerciseIndex, 1);
+        
+        const afterElement = e.target.closest('.exercise-card');
+        if (afterElement) {
+            const afterIndex = targetWorkout.exercises.findIndex(ex => ex.id === afterElement.id);
+            targetWorkout.exercises.splice(afterIndex, 0, draggedExerciseObj);
+        } else {
+            targetWorkout.exercises.push(draggedExerciseObj);
+        }
+        
+        saveData();
+        renderStudentDetailView(studentId);
+    }
+
+    // --- IMPRESSÃO ---
+    const prepareAndPrintAllWorkouts = (sId) => { const s = getStudent(sId); if (!s || !s.workouts || s.workouts.length===0) return showToast('Nenhum treino para imprimir.', 'info'); printArea.innerHTML = s.workouts.map(w => `<div class="printable-workout-card"><div class="print-header"><h1 class="print-student-name">${s.name}</h1><h2 class="print-workout-name">${w.name}</h2></div><table class="print-table"><thead><tr><th>Exercício</th><th>Séries</th><th>Reps</th><th>Descanso</th><th>Obs.</th></tr></thead><tbody>${w.exercises && w.exercises.length>0 ? w.exercises.map(ex => `<tr><td><i class="fas fa-dumbbell" style="margin-right:8px; color:#4f46e5;"></i>${ex.name}</td><td>${ex.sets}</td><td>${ex.reps}</td><td>${ex.rest}s</td><td>${ex.notes||'-'}</td></tr>`).join('') : '<tr><td colspan="5" style="text-align:center;">Nenhum exercício.</td></tr>'}</tbody></table></div>`).join(''); window.print(); printArea.innerHTML = ''; };
+
+    // --- RENDERIZAÇÃO DAS VIEWS (Estrutura principal das telas) ---
+    // (Código completo das funções de renderização está aqui, pois são cruciais)
+    function renderHomeView() {
+        mainContent.innerHTML = `
+            <div class="page text-center">
+                <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                    <div class="dashboard-card bg-gray-800 p-8 flex flex-col justify-center items-center">
+                        <h2 class="text-2xl font-semibold mb-4 text-indigo-400"><i class="fas fa-users mr-2"></i>Alunos</h2>
+                        <p class="text-6xl font-bold">${appData.students.length}</p>
+                    </div>
+                    <div class="dashboard-card bg-gray-800 p-8">
+                        <h2 class="text-2xl font-semibold mb-4 text-purple-400"><i class="fas fa-bolt mr-2"></i>Ações</h2>
+                        <div class="flex flex-col gap-4">
+                            <button onclick="openAddStudentModal()" class="btn btn-primary w-full"><i class="fas fa-user-plus"></i> Novo Aluno</button>
+                            <button onclick="renderStudentsListView()" class="btn btn-secondary w-full"><i class="fas fa-address-book"></i> Ver Alunos</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="max-w-4xl mx-auto dashboard-card bg-gray-800 p-8">
+                    <h2 class="text-2xl font-semibold mb-4 text-green-400"><i class="fas fa-database mr-2"></i>Backup</h2>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button onclick="importData()" class="btn btn-success w-full"><i class="fas fa-upload"></i> Importar</button>
+                        <button onclick="exportData()" class="btn btn-info w-full"><i class="fas fa-download"></i> Exportar</button>
+                    </div>
+                    <p class="text-gray-500 text-sm mt-4">Ray aqui você proteje os seus dados. Exporte seu backup regularmente.</p>
+                </div>
+            </div>`;
+    }
+    function renderStudentsListView(filterText = '') {
+        const filtered = appData.students.filter(s => s.name.toLowerCase().includes(filterText.toLowerCase()));
+        mainContent.innerHTML = `<div class="page max-w-7xl mx-auto"><div class="text-center mb-8"><button onclick="renderHomeView()" class="text-indigo-400 text-lg hover:text-indigo-300 transition-colors"><i class="fas fa-arrow-left mr-2"></i> Voltar</button></div><div class="mb-8 max-w-2xl mx-auto relative"><input type="text" id="search-student" onkeyup="renderStudentsListView(this.value)" value="${filterText}" class="form-input pl-12" placeholder="Buscar aluno..."><i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-6">${filtered.length > 0 ? filtered.map(s => `<div class="student-card glass-effect p-5"><div class="flex justify-between items-center"><div class="flex items-center gap-4"><div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-2xl font-bold">${s.name.charAt(0).toUpperCase()}</div><div><h3 class="text-xl font-semibold">${s.name}</h3><p class="text-gray-400">${s.workouts?.length||0} treinos</p></div></div><div class="flex flex-col sm:flex-row gap-2"><button onclick="renderStudentDetailView('${s.id}')" class="btn btn-success p-2 h-10 w-10 text-xs" title="Ver"><i class="fas fa-eye"></i></button><button onclick="openEditStudentModal('${s.id}')" class="btn btn-warning p-2 h-10 w-10 text-xs" title="Editar"><i class="fas fa-pencil-alt"></i></button><button onclick="deleteStudent('${s.id}')" class="btn btn-danger p-2 h-10 w-10 text-xs" title="Excluir"><i class="fas fa-trash"></i></button></div></div></div>`).join('') : `<div class="col-span-1 lg:col-span-2 text-center text-gray-400 py-10 bg-gray-800 rounded-lg"><i class="fas fa-user-slash fa-3x mb-4"></i><p>Nenhum aluno encontrado.</p></div>`}</div></div>`;
+        document.getElementById('search-student')?.focus();
+    }
+    function renderStudentDetailView(studentId) {
+        const s = getStudent(studentId);
+        if (!s) return renderStudentsListView();
+        mainContent.innerHTML = `<div class="page max-w-5xl mx-auto"><div class="flex justify-between items-center mb-8"><button onclick="renderStudentsListView()" class="text-indigo-400 text-lg hover:text-indigo-300 transition-colors"><i class="fas fa-arrow-left mr-2"></i> Voltar</button>${s.workouts&&s.workouts.length>0 ? `<button onclick="prepareAndPrintAllWorkouts('${s.id}')" class="btn btn-info" title="Imprimir"><i class="fas fa-print"></i> Imprimir</button>`:''}</div><div class="flex flex-col items-center mb-10"><div class="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-5xl font-bold mb-4">${s.name.charAt(0).toUpperCase()}</div><h2 class="text-4xl font-bold">${s.name}</h2></div><div class="space-y-8" id="workouts-list" ondrop="handleDrop(event)">${s.workouts&&s.workouts.length>0 ? s.workouts.map(w => `<div class="bg-gray-800 rounded-xl p-6 shadow-lg"><div class="flex justify-between items-start mb-4"><div><h4 class="text-2xl font-bold text-indigo-400">${w.name}</h4><p class="text-gray-400">${w.exercises?.length||0} exercícios</p></div><div class="flex items-center gap-3"><button onclick="cloneWorkout('${s.id}','${w.id}')" class="text-blue-400 text-lg hover:text-blue-300 transition-colors" title="Clonar"><i class="fas fa-copy"></i></button><button onclick="openEditWorkoutModal('${s.id}','${w.id}')" class="text-yellow-400 text-lg hover:text-yellow-300 transition-colors" title="Editar"><i class="fas fa-pencil-alt"></i></button><button onclick="deleteWorkout('${s.id}','${w.id}')" class="text-red-500 text-lg hover:text-red-400 transition-colors" title="Excluir"><i class="fas fa-trash-alt"></i></button></div></div><div class="space-y-4" data-workout-id="${w.id}" ondragover="handleDragOver(event)">${w.exercises?.map(ex => `<div id="${ex.id}" class="exercise-card glass-effect p-4 rounded-lg cursor-grab" draggable="true" ondragstart="handleDragStart(event,'${s.id}')" ondragend="handleDragEnd(event)"><div class="flex justify-between items-center"><p class="font-semibold text-lg text-white"><i class="fas fa-grip-vertical text-gray-500 mr-3"></i> ${ex.name}</p><div><button onclick="openEditExerciseModal('${s.id}','${w.id}','${ex.id}')" class="text-gray-400 hover:text-yellow-400 px-2 text-sm"><i class="fas fa-pencil-alt"></i></button><button onclick="deleteExercise('${s.id}','${w.id}','${ex.id}')" class="text-gray-400 hover:text-red-500 px-2 text-sm"><i class="fas fa-trash"></i></button></div></div><div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm mt-3 text-gray-300 pl-8"><span><i class="fas fa-layer-group text-indigo-400 mr-2"></i> ${ex.sets} séries</span><span><i class="fas fa-redo text-indigo-400 mr-2"></i> ${ex.reps} reps</span><span><i class="fas fa-clock text-indigo-400 mr-2"></i> ${ex.rest}s</span><span class="col-span-full mt-2"><i class="fas fa-info-circle text-indigo-400 mr-2"></i> ${ex.notes||'Sem notas'}</span></div></div>`).join('')||''}</div><button onclick="openAddExerciseModal('${s.id}','${w.id}')" class="btn btn-success w-full mt-6"><i class="fas fa-plus"></i> Adicionar Exercício</button></div>`).join('') : `<div class="text-center text-gray-400 py-10 bg-gray-800 rounded-lg"><i class="fas fa-file-excel fa-3x mb-4"></i><p>Nenhum treino para ${s.name}.</p><button onclick="openAddWorkoutModal('${s.id}')" class="btn btn-primary mt-4">Criar Primeiro Treino</button></div>`}</div><div class="mt-12"><button onclick="openAddWorkoutModal('${s.id}')" class="btn btn-primary w-full py-4"><i class="fas fa-plus-circle"></i> Criar Nova Ficha</button></div></div>`;
+    }
+
+    // --- INICIALIZAÇÃO DA APLICAÇÃO ---
+    document.addEventListener('DOMContentLoaded', () => {
+        loadData();
+        renderHomeView();
+    });
+    </script>
+</body>
+</html>
